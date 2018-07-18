@@ -3,6 +3,7 @@ JSM.ImportFileList = function ()
 	this.originalList = null;
 	this.descriptors = null;
 	this.isFile = null;
+	this.isLocaFile = null;
 };
 
 JSM.ImportFileList.prototype.InitFromFiles = function (fileList)
@@ -42,6 +43,23 @@ JSM.ImportFileList.prototype.InitFromURLs = function (urlList)
 	this.isFile = false;
 };
 
+JSM.ImportFileList.prototype.InitFromLocalFiles = function(localFileNames) {
+	this.originalList = localFileNames;
+	this.descriptors = [];
+	var i, name, descriptor;
+	for (i = 0; i < localFileNames.length; i++) {
+		name = localFileNames[i];
+		descriptor = {
+			originalObject : name,
+			originalFileName : name,
+			fileName : name.toUpperCase (),
+			extension : this.GetFileExtension (name)
+		};
+		this.descriptors.push (descriptor);
+	}
+	this.isLocalFile = true;
+}
+
 JSM.ImportFileList.prototype.GetOriginalList = function ()
 {
 	return this.originalList;
@@ -64,7 +82,8 @@ JSM.ImportFileList.prototype.GetInputList = function ()
 		inputListElem = {
 			originalObject : descriptor.originalObject,
 			isFile : this.IsFile (),
-			isArrayBuffer : IsArrayBuffer (descriptor)
+			isArrayBuffer : IsArrayBuffer (descriptor),
+			isLocalFile: this.IsLocalFile()
 		};
 		result.push (inputListElem);
 	}
@@ -92,6 +111,10 @@ JSM.ImportFileList.prototype.IsFile = function ()
 {
 	return this.isFile;
 };
+
+JSM.ImportFileList.prototype.IsLocalFile = function() {
+	return this.isLocalFile;
+}
 
 JSM.ImportFileList.prototype.GetMainFileIndex = function ()
 {
@@ -241,3 +264,10 @@ JSM.ConvertURLListToJsonData = function (urlList, callbacks)
 	importFileList.InitFromURLs (urlList);
 	JSM.ConvertImportFileListToJsonData (importFileList, callbacks);
 };
+
+JSM.ConvertLocalFilesToJsonData = function(localFileNames, callbacks)
+{
+	var importFileList = new JSM.ImportFileList();
+	importFileList.InitFromLocalFiles(localFileNames);
+	JSM.ConvertImportFileListToJsonData (importFileList, callbacks);
+}

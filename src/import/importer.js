@@ -56,6 +56,16 @@ JSM.GetStringBufferFromFile = function (file, onReady)
 	reader.readAsText (file);
 };
 
+JSM.GetStringBufferFromLocalFile = function(fileName, onReady) {
+	fs = require('fs');
+	fs.readFile(fileName, 'utf8', function (err,data) {
+	  if (err) {
+	    return console.log(err);
+	  }
+	  onReady(data);
+	});
+}
+
 JSM.LoadMultipleBuffersInternal = function (inputList, index, result, onReady)
 {
 	if (index >= inputList.length) {
@@ -65,7 +75,11 @@ JSM.LoadMultipleBuffersInternal = function (inputList, index, result, onReady)
 	
 	var currentInput = inputList[index];
 	var loaderFunction = null;
-	if (currentInput.isFile) {
+
+	if(currentInput.isLocalFile) {
+		loaderFunction = JSM.GetStringBufferFromLocalFile; 
+	}
+	else if (currentInput.isFile) {
 		if (currentInput.isArrayBuffer) {
 			loaderFunction = JSM.GetArrayBufferFromFile;
 		} else {
@@ -78,6 +92,7 @@ JSM.LoadMultipleBuffersInternal = function (inputList, index, result, onReady)
 			loaderFunction = JSM.GetStringBufferFromURL;
 		}
 	}
+
 	
 	loaderFunction (currentInput.originalObject, function (resultBuffer) {
 		result.push (resultBuffer);
